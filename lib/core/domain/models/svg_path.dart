@@ -1,13 +1,11 @@
 //
 
-import 'dart:math' as math;
-
-import 'package:flutter/material.dart';
-import 'package:svg_renderer/configuration/extensions/double_extension.dart';
-import 'package:svg_renderer/configuration/extensions/path_extension.dart';
+import 'package:svg_renderer/core/domain/models/path_command.dart';
 import 'package:svg_renderer/core/domain/usecases/svg_commands_extractor.dart';
 import 'package:xml/xml.dart';
 
+import '../usecases/height_ratio_string.dart';
+import '../usecases/width_ratio_string.dart';
 import 'path_step.dart';
 
 class SVGPath {
@@ -16,12 +14,14 @@ class SVGPath {
   final List<PathStep> steps;
   final double totalWidth;
   final double totalHeight;
+  final List<PathCommand> commands;
   SVGPath._({
     required this.id,
     required this.path,
     required this.steps,
     required this.totalWidth,
     required this.totalHeight,
+    required this.commands,
   });
 
   factory SVGPath.fromXml({
@@ -42,14 +42,32 @@ class SVGPath {
       steps: oprands,
       totalHeight: height,
       totalWidth: width,
+      commands: [],
     );
   }
 
   List<String> getPath() {
     final SVGCommandsExtractor extractor =
         SVGCommandsExtractor(totalWidth: totalWidth, totalHeight: totalHeight);
+    final List<String> lines = [];
 
-    return extractor.getPath(steps);
+    final WidthRatioString widthRatioString =
+        WidthRatioString(totalWidth: totalWidth);
+    final HeightRatioString heightRatioString =
+        HeightRatioString(totalHeight: totalHeight);
+
+    lines.add("Path myPath(Size size) {");
+    lines.add("var path = Path();");
+    lines.add("final width = size.width;");
+    lines.add("final height = size.height;");
+    final commands = extractor.getPath(steps);
+
+    for (final command in commands) {
+      lines.add(command.intoFlutter(widthRatioString, heightRatioString));
+    }
+    lines.add("return path;");
+    lines.add("}");
+    return lines;
   }
 
   /*

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:svg_renderer/configuration/extensions/path_extension.dart';
+import 'package:svg_renderer/core/domain/models/path_command.dart';
 
 import 'height_ratio_string.dart';
 import 'width_ratio_string.dart';
@@ -17,8 +18,9 @@ class AppendArc {
     required this.heightRatioString,
   });
 
-  List<String> call(String cmd, Path path, List<double> operands) {
-    final List<String> lines = [];
+  List<PathCommand> call(
+      String cmd, Path path, List<double> operands, Offset lastPoint) {
+    final List<PathCommand> lines = [];
 
     if (operands.length % 7 != 0) {
       debugPrint("*** Error: Invalid number of parameters for A command");
@@ -26,7 +28,7 @@ class AppendArc {
     }
 
     for (int offset = 0; offset < operands.length - 1; offset = offset + 7) {
-      const currentPoint = Offset(0, 0); // path.lastPosition;
+      final currentPoint = lastPoint; // path.lastPosition;
 
       final double px = currentPoint.dx;
       final double py = currentPoint.dy;
@@ -143,12 +145,12 @@ class AppendArc {
             centery: centery);
 
         path.addCurve(to: p, controlPoint1: p1, controlPoint2: p2);
-
-        lines.add(
-            "path.addCurve(to: Offset(${widthRatioString(p.dx)}, ${heightRatioString(p.dy)}), controlPoint1: Offset(${widthRatioString(p1.dx)}, ${heightRatioString(p1.dy)}), controlPoint2: Offset(${widthRatioString(p2.dx)}, ${heightRatioString(p2.dy)}),);");
-        // TODO: take care of this [lastControlPoint]
-        // ignore: unused_local_variable
-        final lastControlPoint = p2;
+        final command = PathCommand.curveTo(
+          to: p,
+          controlPoint1: p1,
+          controlPoint2: p2,
+        );
+        lines.add(command);
 
         ang1 += ang2;
       }

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:svg_renderer/configuration/extensions/path_extension.dart';
+import 'package:svg_renderer/core/domain/models/path_command.dart';
 
 import 'height_ratio_string.dart';
 import 'width_ratio_string.dart';
@@ -15,17 +16,17 @@ class AppendLineTo {
     required this.heightRatioString,
   });
 
-  List<String> call(String cmd, Path path, List<double> operands) {
-    final List<String> lines = [];
+  List<PathCommand> call(
+      String cmd, Path path, List<double> operands, Offset lastPoint) {
+    final List<PathCommand> lines = [];
     if (operands.length == 1) {
-      return appendLineToSinglePoint(cmd, path, operands);
+      return appendLineToSinglePoint(cmd, path, operands, lastPoint);
     }
 
     for (int i = 0; i < operands.length - 1; i = i + 2) {
       double x = 0;
       double y = 0;
-      const currentPoint = Offset(0, 0); // path.lastPosition;
-      // final currentPoint = path.lastPosition;
+      final currentPoint = lastPoint;
       switch (cmd) {
         case "l":
           x = currentPoint.dx + operands[i];
@@ -58,46 +59,37 @@ class AppendLineTo {
           return [];
       }
       path.addLine(to: Offset(x, y));
-      final ratioX = widthRatioString(x);
-      final ratioY = heightRatioString(y);
-      lines.add("path.addLine(to: Offset($ratioX, $ratioY)); // appendLineTo");
+      final command = PathCommand.lineTo(to: Offset(x, y));
+      lines.add(command);
     }
     return lines;
   }
 
-  List<String> appendLineToSinglePoint(
-      String cmd, Path path, List<double> operands) {
-    final List<String> lines = [];
+  List<PathCommand> appendLineToSinglePoint(
+      String cmd, Path path, List<double> operands, Offset lastPonit) {
+    final List<PathCommand> lines = [];
 
-    const lastPonit = Offset(0, 0); // path.lastPosition;
+    // const lastPonit = Offset(0, 0); // path.lastPosition;
 
     if (cmd == "V" || cmd == "v") {
       final Offset currentPoint = cmd == "v" ? lastPonit : const Offset(0, 0);
 
       final Offset newPoint =
           Offset(lastPonit.dx, operands[0] + currentPoint.dy);
-      final ratioX = widthRatioString(newPoint.dx);
-      final ratioY = heightRatioString(newPoint.dy);
       path.addLine(to: newPoint);
-      cmd == "v"
-          ? lines.add(
-              "path.addRelativeLineTo(to: Offset($ratioX, $ratioY)); // appendLineToSinglePoint")
-          : lines.add(
-              "path.addLine(to: Offset($ratioX, $ratioY)); // appendLineToSinglePoint");
+
+      final command = PathCommand.lineTo(to: newPoint);
+
+      lines.add(command);
       return lines;
     }
     if (cmd == "H" || cmd == "h") {
       final Offset currentPoint = cmd == "h" ? lastPonit : const Offset(0, 0);
       final Offset newPoint =
           Offset(operands[0] + currentPoint.dx, lastPonit.dy);
-      final ratioX = widthRatioString(newPoint.dx);
-      final ratioY = heightRatioString(newPoint.dy);
       path.addLine(to: newPoint);
-      cmd == "h"
-          ? lines.add(
-              "path.addRelativeLineTo(to: Offset($ratioX, $ratioY)); // appendLineToSinglePoint 2")
-          : lines.add(
-              "path.addLine(to: Offset($ratioX, $ratioY)); // appendLineToSinglePoint 2");
+      final command = PathCommand.lineTo(to: newPoint);
+      lines.add(command);
 
       return lines;
     }

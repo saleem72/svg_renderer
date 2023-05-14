@@ -40,30 +40,10 @@ extension PathPonits on Path {
         controlPoint2.dy, to.dx, to.dy);
   }
 
-  addRelativeCurveTo({
-    required Offset to,
-    required Offset controlPoint1,
-    required Offset controlPoint2,
-  }) {
-    relativeCubicTo(controlPoint1.dx, controlPoint1.dy, controlPoint2.dx,
-        controlPoint2.dy, to.dx, to.dy);
-  }
-
   addQuadCurve({
     required Offset to,
     required Offset controlPoint,
   }) {
     quadraticBezierTo(controlPoint.dx, controlPoint.dy, to.dx, to.dy);
-  }
-
-  addReleativeQuadCurve({
-    required Offset to,
-    required Offset controlPoint,
-  }) {
-    relativeQuadraticBezierTo(controlPoint.dx, controlPoint.dy, to.dx, to.dy);
-  }
-
-  addRelativeLineTo({required Offset to}) {
-    relativeLineTo(to.dx, to.dy);
   }
 }

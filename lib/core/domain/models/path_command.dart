@@ -2,11 +2,15 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:svg_renderer/core/domain/usecases/height_ratio_string.dart';
+import 'package:svg_renderer/core/domain/usecases/width_ratio_string.dart';
 
 abstract class PathCommand {
   Offset get to;
-  String get intoIos;
-  String get intoFlutter;
+  String intoIos(
+      WidthRatioString widthRatioString, HeightRatioString heightRatioString);
+  String intoFlutter(
+      WidthRatioString widthRatioString, HeightRatioString heightRatioString);
   intoPath(Path path);
 
   const PathCommand();
@@ -25,14 +29,20 @@ abstract class PathCommand {
     required Offset controlPoint,
   }) =>
       _AddQuadCurve(to: to, controlPoint: controlPoint);
+
+  factory PathCommand.close() => _CLosePath();
 }
 
 class _MoveTo extends PathCommand {
   @override
-  String get intoFlutter => "path.moveTo(${to.dx}, ${to.dy});";
+  String intoFlutter(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.moveTo(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)});";
 
   @override
-  String get intoIos => "path.move(to: Offset(${to.dx}, ${to.dy}));";
+  String intoIos(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.move(to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}));";
 
   @override
   intoPath(Path path) {
@@ -49,10 +59,14 @@ class _MoveTo extends PathCommand {
 
 class _LineTo extends PathCommand {
   @override
-  String get intoFlutter => "path.lineTo(${to.dx}, ${to.dy});";
+  String intoFlutter(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.lineTo(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)});";
 
   @override
-  String get intoIos => "path.addLine(to: Offset(x: ${to.dx}, y: ${to.dy}));";
+  String intoIos(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.addLine(to: Offset(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}));";
 
   @override
   intoPath(Path path) {
@@ -69,17 +83,32 @@ class _LineTo extends PathCommand {
 
 class _AddCurve extends PathCommand {
   @override
-  String get intoFlutter => """path.cubicTo(
-    ${controlPoint1.dx}, ${controlPoint1.dy}, 
-    ${controlPoint2.dx}, ${controlPoint2.dy}, 
-    ${to.dx}, ${to.dy},
+  final Offset to;
+  final Offset controlPoint1;
+  final Offset controlPoint2;
+
+  _AddCurve({
+    required this.to,
+    required this.controlPoint1,
+    required this.controlPoint2,
+  });
+
+  @override
+  String intoFlutter(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      """path.cubicTo(
+    ${widthRatioString(controlPoint1.dx)}, ${heightRatioString(controlPoint1.dy)}, 
+    ${widthRatioString(controlPoint2.dx)}, ${heightRatioString(controlPoint2.dy)}, 
+    ${widthRatioString(to.dx)}, ${heightRatioString(to.dy)},
     );""";
 
   @override
-  String get intoIos => """path.addCurve(
-    to: Offset(${to.dx}, ${to.dy}), 
-    controlPoint1: Offset(${controlPoint1.dx}, ${controlPoint1.dy}), 
-    controlPoint2: Offset(${controlPoint2.dx}, ${controlPoint2.dx}),
+  String intoIos(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      """path.addCurve(
+    to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}), 
+    controlPoint1: Offset(${widthRatioString(controlPoint1.dx)}, ${heightRatioString(controlPoint1.dy)}), 
+    controlPoint2: Offset(${widthRatioString(controlPoint2.dx)}, ${heightRatioString(controlPoint2.dy)}),
     );""";
 
   @override
@@ -87,49 +116,56 @@ class _AddCurve extends PathCommand {
     path.cubicTo(controlPoint1.dx, controlPoint1.dy, controlPoint2.dx,
         controlPoint2.dy, to.dx, to.dy);
   }
-
-  @override
-  final Offset to;
-  final Offset controlPoint1, controlPoint2;
-  _AddCurve({
-    required this.to,
-    required this.controlPoint1,
-    required this.controlPoint2,
-  });
 }
-
-/*
-addQuadCurve({
-    required Offset to,
-    required Offset controlPoint,
-  }) {
-    quadraticBezierTo(controlPoint.dx, controlPoint.dy, to.dx, to.dy);
-  }
-*/
 
 class _AddQuadCurve extends PathCommand {
   @override
-  String get intoFlutter => """path.quadraticBezierTo(
-    ${controlPoint.dx}, ${controlPoint.dy}, 
-    ${to.dx}, ${to.dy},
+  final Offset to;
+  final Offset controlPoint;
+
+  _AddQuadCurve({
+    required this.to,
+    required this.controlPoint,
+  });
+
+  @override
+  String intoFlutter(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      """path.quadraticBezierTo(
+    ${widthRatioString(controlPoint.dx)}, ${heightRatioString(controlPoint.dy)}, 
+    ${widthRatioString(to.dx)}, ${heightRatioString(to.dy)},
     );""";
 
   @override
-  String get intoIos => """path.addQuadCurve(
-    to: Offset(${to.dx}, ${to.dy}), 
-    controlPoint: Offset(${controlPoint.dx}, ${controlPoint.dy}),
+  String intoIos(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      """path.addQuadCurve(
+    to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}), 
+    controlPoint: Offset(${widthRatioString(controlPoint.dx)}, ${heightRatioString(controlPoint.dy)}),
     );""";
 
   @override
   intoPath(Path path) {
     path.quadraticBezierTo(controlPoint.dx, controlPoint.dy, to.dx, to.dy);
   }
+}
+
+class _CLosePath extends PathCommand {
+  @override
+  String intoFlutter(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.close();";
 
   @override
-  final Offset to;
-  final Offset controlPoint;
-  _AddQuadCurve({
-    required this.to,
-    required this.controlPoint,
-  });
+  String intoIos(WidthRatioString widthRatioString,
+          HeightRatioString heightRatioString) =>
+      "path.close();";
+
+  @override
+  intoPath(Path path) {
+    path.close();
+  }
+
+  @override
+  Offset get to => const Offset(0, 0);
 }
