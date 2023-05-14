@@ -1,0 +1,3 @@
+//
+
+class InvalidSVG implements Exception {}
