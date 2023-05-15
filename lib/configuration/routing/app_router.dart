@@ -31,9 +31,9 @@ class AppRouter {
             path: settings.arguments as SVGPath,
           ),
         );
-      case AppPages.pathDraw:
+      case AppPages.drawing:
         return MaterialPageRoute(
-          builder: (_) => const DrawView(),
+          builder: (_) => const DrawingScreen(),
         );
       default:
         return MaterialPageRoute(

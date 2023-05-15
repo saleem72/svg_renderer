@@ -14,13 +14,23 @@ class PathStep {
   });
 
   static List<double> _getOprands(String commnad) {
-    return commnad
-        .split(' ')
-        .toList()
+    // final newValue = commnad.replaceAll(RegExp(r'-'), ' -');
+    // final other = newValue.replaceAll(RegExp(r','), ' ');
+    // print('$commnad, $other');
+    final reg = RegExp(r'(-?)(\d+)?\.(\d+)?|(-?)(\d+)');
+    final matchs = reg.allMatches(commnad).toList();
+
+    final steps =
+        matchs.map((e) => e.group(0)).toList().whereType<String>().toList();
+    final result = steps
+        // .split(' ')
+        // .toList()
         .map((e) => e.toDouble())
         .toList()
         .whereType<double>()
         .toList();
+
+    return result;
   }
 
   factory PathStep.fromString(String step) {
@@ -30,6 +40,8 @@ class PathStep {
     return PathStep(source: step, command: cmd, points: oprands);
   }
 }
+
+
 
 
 /*

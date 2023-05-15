@@ -11,6 +11,8 @@ abstract class HomeEvent extends Equatable {
 
   factory HomeEvent.clearError() => _ClearError();
 
+  factory HomeEvent.clearPaths() => _ClearPaths();
+
   @override
   List<Object> get props => [];
 }
@@ -28,3 +30,5 @@ class _XMLHasChanged extends HomeEvent {
 class _DecodeXML extends HomeEvent {}
 
 class _ClearError extends HomeEvent {}
+
+class _ClearPaths extends HomeEvent {}

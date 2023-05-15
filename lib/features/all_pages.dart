@@ -2,4 +2,4 @@
 
 export './home_page/home_page.dart';
 export './path_details/path_details.dart';
-export './path_details/presentation/widgets/draw_view.dart';
+export './drawing_screen/drawing_screen.dart';

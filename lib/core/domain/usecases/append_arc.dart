@@ -3,33 +3,23 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:svg_renderer/configuration/extensions/path_extension.dart';
 import 'package:svg_renderer/core/domain/models/path_command.dart';
 
-import 'height_ratio_string.dart';
-import 'width_ratio_string.dart';
-
 class AppendArc {
-  final WidthRatioString widthRatioString;
-  final HeightRatioString heightRatioString;
+  AppendArc();
 
-  AppendArc({
-    required this.widthRatioString,
-    required this.heightRatioString,
-  });
-
-  List<PathCommand> call(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
+  List<PathCommand> call(String cmd, List<double> operands, Offset lastPoint) {
     final List<PathCommand> lines = [];
 
     if (operands.length % 7 != 0) {
       debugPrint("*** Error: Invalid number of parameters for A command");
       return [];
     }
+    Offset lastControlPoint = lastPoint;
 
     for (int offset = 0; offset < operands.length - 1; offset = offset + 7) {
-      final currentPoint = lastPoint; // path.lastPosition;
-
+      final currentPoint = lastControlPoint; // path.lastPosition;
+      print('lastControlPoint: ${lastControlPoint.toString()}');
       final double px = currentPoint.dx;
       final double py = currentPoint.dy;
       double rx = operands[offset];
@@ -81,7 +71,7 @@ class AppendArc {
 
       final double centerxp = radicant * rx / ry * pyp;
       final double centeryp = radicant * -ry / rx * pxp;
-
+      // cosphi * centerxp - sinphi * centeryp + (px + cx) / 2
       final double centerx =
           cosphi * centerxp - sinphi * centeryp + (px + cx) / 2;
       final double centery =
@@ -107,8 +97,8 @@ class AppendArc {
           math.max((ang2.abs() / (tau / 4.0)).ceil(), 1.0).toInt();
 
       ang2 /= segments;
-
-      for (int i = 0; i <= segments; i++) {
+      // for _ in stride(from: 0, to: segments, by: 1)
+      for (int i = 0; i < segments; i++) {
         final double a = 4.0 / 3.0 * math.tan(ang2 / 4.0);
 
         final double x1 = math.cos(ang1);
@@ -144,7 +134,6 @@ class AppendArc {
             centerx: centerx,
             centery: centery);
 
-        path.addCurve(to: p, controlPoint1: p1, controlPoint2: p2);
         final command = PathCommand.curveTo(
           to: p,
           controlPoint1: p1,
@@ -153,6 +142,7 @@ class AppendArc {
         lines.add(command);
 
         ang1 += ang2;
+        lastControlPoint = command.to;
       }
     }
 

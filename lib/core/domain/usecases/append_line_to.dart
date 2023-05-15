@@ -4,29 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:svg_renderer/configuration/extensions/path_extension.dart';
 import 'package:svg_renderer/core/domain/models/path_command.dart';
 
-import 'height_ratio_string.dart';
-import 'width_ratio_string.dart';
-
 class AppendLineTo {
-  final WidthRatioString widthRatioString;
-  final HeightRatioString heightRatioString;
+  AppendLineTo();
 
-  AppendLineTo({
-    required this.widthRatioString,
-    required this.heightRatioString,
-  });
-
-  List<PathCommand> call(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
+  List<PathCommand> call(String cmd, List<double> operands, Offset lastPoint) {
     final List<PathCommand> lines = [];
     if (operands.length == 1) {
-      return appendLineToSinglePoint(cmd, path, operands, lastPoint);
+      return appendLineToSinglePoint(cmd, operands, lastPoint);
     }
-
+    Offset lastControlPoint = lastPoint;
     for (int i = 0; i < operands.length - 1; i = i + 2) {
       double x = 0;
       double y = 0;
-      final currentPoint = lastPoint;
+      final currentPoint = lastControlPoint;
       switch (cmd) {
         case "l":
           x = currentPoint.dx + operands[i];
@@ -58,15 +48,15 @@ class AppendLineTo {
           debugPrint("*** Error: Unrecognised L style command.");
           return [];
       }
-      path.addLine(to: Offset(x, y));
       final command = PathCommand.lineTo(to: Offset(x, y));
       lines.add(command);
+      lastControlPoint = command.to;
     }
     return lines;
   }
 
   List<PathCommand> appendLineToSinglePoint(
-      String cmd, Path path, List<double> operands, Offset lastPonit) {
+      String cmd, List<double> operands, Offset lastPonit) {
     final List<PathCommand> lines = [];
 
     // const lastPonit = Offset(0, 0); // path.lastPosition;
@@ -76,7 +66,6 @@ class AppendLineTo {
 
       final Offset newPoint =
           Offset(lastPonit.dx, operands[0] + currentPoint.dy);
-      path.addLine(to: newPoint);
 
       final command = PathCommand.lineTo(to: newPoint);
 
@@ -87,7 +76,6 @@ class AppendLineTo {
       final Offset currentPoint = cmd == "h" ? lastPonit : const Offset(0, 0);
       final Offset newPoint =
           Offset(operands[0] + currentPoint.dx, lastPonit.dy);
-      path.addLine(to: newPoint);
       final command = PathCommand.lineTo(to: newPoint);
       lines.add(command);
 

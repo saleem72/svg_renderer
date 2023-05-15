@@ -5,5 +5,5 @@ class AppPages {
 
   static const String initial = '/';
   static const String pathDetails = '/path_details';
-  static const String pathDraw = '/path_draw';
+  static const String drawing = '/drawing';
 }

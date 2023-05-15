@@ -35,6 +35,13 @@ abstract class PathCommand {
 
 class _MoveTo extends PathCommand {
   @override
+  final Offset to;
+
+  _MoveTo({
+    required this.to,
+  });
+
+  @override
   String intoFlutter(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
       "path.moveTo(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)});";
@@ -42,22 +49,23 @@ class _MoveTo extends PathCommand {
   @override
   String intoIos(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
-      "path.move(to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}));";
+      // path.move(to: CGPoint(x: 0.95*width, y: 0))
+      "path.move(to: CGPoint(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}));";
 
   @override
   intoPath(Path path) {
     path.moveTo(to.dx, to.dy);
   }
-
-  @override
-  final Offset to;
-
-  _MoveTo({
-    required this.to,
-  });
 }
 
 class _LineTo extends PathCommand {
+  @override
+  final Offset to;
+
+  _LineTo({
+    required this.to,
+  });
+
   @override
   String intoFlutter(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
@@ -66,19 +74,13 @@ class _LineTo extends PathCommand {
   @override
   String intoIos(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
-      "path.addLine(to: Offset(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}));";
+      // path.addLine(to: CGPoint(x: 1.0*width, y: 0.73333*height))
+      "path.addLine(to: CGPoint(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}));";
 
   @override
   intoPath(Path path) {
     path.lineTo(to.dx, to.dy);
   }
-
-  @override
-  final Offset to;
-
-  _LineTo({
-    required this.to,
-  });
 }
 
 class _AddCurve extends PathCommand {
@@ -105,10 +107,12 @@ class _AddCurve extends PathCommand {
   @override
   String intoIos(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
+
+      // path.addCurve(to: CGPoint(x: 1.0*width, y: 0.26667*height), control1: CGPoint(x: 0.97762*width, y: 0), control2: CGPoint(x: 1.0*width, y: 0.11939*height))
       """path.addCurve(
-    to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}), 
-    controlPoint1: Offset(${widthRatioString(controlPoint1.dx)}, ${heightRatioString(controlPoint1.dy)}), 
-    controlPoint2: Offset(${widthRatioString(controlPoint2.dx)}, ${heightRatioString(controlPoint2.dy)}),
+    to: CGPoint(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}), 
+    control1: CGPoint(x: ${widthRatioString(controlPoint1.dx)},y: ${heightRatioString(controlPoint1.dy)}), 
+    control2: CGPoint(x: ${widthRatioString(controlPoint2.dx)}, y: ${heightRatioString(controlPoint2.dy)})
     );""";
 
   @override
@@ -139,9 +143,12 @@ class _AddQuadCurve extends PathCommand {
   @override
   String intoIos(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
+      //"path.addQuadCurve(
+      //to: CGPoint(x: \(widthRatioString(x)), y: \(heightRatioString(y))),
+      //control: CGPoint(x: \(widthRatioString(x1)), y: \(heightRatioString(y1))))"
       """path.addQuadCurve(
-    to: Offset(${widthRatioString(to.dx)}, ${heightRatioString(to.dy)}), 
-    controlPoint: Offset(${widthRatioString(controlPoint.dx)}, ${heightRatioString(controlPoint.dy)}),
+    to: CGPoint(x: ${widthRatioString(to.dx)}, y: ${heightRatioString(to.dy)}), 
+    control: CGPoint(x: ${widthRatioString(controlPoint.dx)}, y: ${heightRatioString(controlPoint.dy)})
     );""";
 
   @override
@@ -159,7 +166,7 @@ class _CLosePath extends PathCommand {
   @override
   String intoIos(WidthRatioString widthRatioString,
           HeightRatioString heightRatioString) =>
-      "path.close();";
+      "path.closeSubpath();";
 
   @override
   intoPath(Path path) {
@@ -169,3 +176,27 @@ class _CLosePath extends PathCommand {
   @override
   Offset get to => const Offset(0, 0);
 }
+
+/*
+struct : Shape {
+	func path(in rect: CGRect) -> Path {
+		var path = Path()
+		let width = rect.size.width
+		let height = rect.size.height
+		path.move(to: CGPoint(x: 0.95*width, y: 0))
+		path.addCurve(to: CGPoint(x: 1.0*width, y: 0.26667*height), control1: CGPoint(x: 0.97762*width, y: 0), control2: CGPoint(x: 1.0*width, y: 0.11939*height))
+		path.addLine(to: CGPoint(x: 1.0*width, y: 0.73333*height))
+		path.addCurve(to: CGPoint(x: 0.95*width, y: 1.0*height), control1: CGPoint(x: 1.0*width, y: 0.88061*height), control2: CGPoint(x: 0.97762*width, y: 1.0*height))
+		path.addLine(to: CGPoint(x: 0.02813*width, y: 1.0*height))
+		path.addLine(to: CGPoint(x: 0.0015*width, y: 1.0*height))
+		path.addCurve(to: CGPoint(x: 0, y: 0.99199*height), control1: CGPoint(x: 0.00067*width, y: 1.0*height), control2: CGPoint(x: 0, y: 0.99642*height))
+		path.addCurve(to: CGPoint(x: 0.00096*width, y: 0.98445*height), control1: CGPoint(x: 0, y: 0.98868*height), control2: CGPoint(x: 0.00038*width, y: 0.98573*height))
+		path.addCurve(to: CGPoint(x: 0.02813*width, y: 0.75*height), control1: CGPoint(x: 0.01682*width, y: 0.94912*height), control2: CGPoint(x: 0.02813*width, y: 0.85748*height))
+		path.addLine(to: CGPoint(x: 0.02813*width, y: 0.26667*height))
+		path.addCurve(to: CGPoint(x: 0.07813*width, y: 0), control1: CGPoint(x: 0.02813*width, y: 0.11939*height), control2: CGPoint(x: 0.05051*width, y: 0))
+		path.addLine(to: CGPoint(x: 0.95*width, y: 0))
+		path.closeSubpath()
+		return path
+	}
+}
+*/

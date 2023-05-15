@@ -45,52 +45,29 @@ class SVGCommandsExtractor {
     required double totalWidth,
     required double totalHeight,
   }) {
-    final widthRatioString = WidthRatioString(totalWidth: totalWidth);
-    final heightRatioString = HeightRatioString(totalHeight: totalHeight);
     return SVGCommandsExtractor._(
-      appendArc: AppendArc(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendCubicCurve: AppendCubicCurve(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendLineTo: AppendLineTo(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendMoveTo: AppendMoveTo(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendQuadraticCurve: AppendQuadraticCurve(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendShorthandCubicCurve: AppendShorthandCubicCurve(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
-      appendShorthandQuadraticCurve: AppendShorthandQuadraticCurve(
-        widthRatioString: widthRatioString,
-        heightRatioString: heightRatioString,
-      ),
+      appendArc: AppendArc(),
+      appendCubicCurve: AppendCubicCurve(),
+      appendLineTo: AppendLineTo(),
+      appendMoveTo: AppendMoveTo(),
+      appendQuadraticCurve: AppendQuadraticCurve(),
+      appendShorthandCubicCurve: AppendShorthandCubicCurve(),
+      appendShorthandQuadraticCurve: AppendShorthandQuadraticCurve(),
     );
   }
 
   List<PathCommand> getPath(List<PathStep> steps) {
-    final Path path = Path();
     final List<PathCommand> commands = [];
 
     for (final step in steps) {
       final lastPoint =
           commands.isEmpty ? const Offset(0, 0) : commands.last.to;
+
       switch (step.command) {
         case "m":
         case "M":
           // done
-          final res = appendMoveTo(step.command, path, step.points, lastPoint);
+          final res = appendMoveTo(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "l":
@@ -100,29 +77,28 @@ class SVGCommandsExtractor {
         case "v":
         case "L":
           // done
-          final res = appendLineTo(step.command, path, step.points, lastPoint);
+          final res = appendLineTo(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
 
         case "c":
         case "C":
           // done
-          final res =
-              appendCubicCurve(step.command, path, step.points, lastPoint);
+          final res = appendCubicCurve(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "s":
         case "S":
           // done
-          final res = appendShorthandCubicCurve(
-              step.command, path, step.points, lastPoint);
+          final res =
+              appendShorthandCubicCurve(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "q":
         case "Q":
           // done
           final res =
-              appendQuadraticCurve(step.command, path, step.points, lastPoint);
+              appendQuadraticCurve(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "t":
@@ -130,17 +106,16 @@ class SVGCommandsExtractor {
           final res =
               // done
               appendShorthandQuadraticCurve(
-                  step.command, path, step.points, lastPoint);
+                  step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "a":
         case "A":
-          final res = appendArc(step.command, path, step.points, lastPoint);
+          final res = appendArc(step.command, step.points, lastPoint);
           commands.addAll(res);
           break;
         case "z":
         case "Z":
-          path.close();
           commands.add(PathCommand.close());
           break;
 
@@ -153,38 +128,37 @@ class SVGCommandsExtractor {
   }
 
   List<PathCommand> appendArc(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendArcUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendArcUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendCubicCurve(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendCubicCurveUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendCubicCurveUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendLineTo(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendLineToUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendLineToUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendMoveTo(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendMoveToUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendMoveToUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendQuadraticCurve(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendQuadraticCurveUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendQuadraticCurveUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendShorthandCubicCurve(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendShorthandCubicCurveUsecase(cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendShorthandCubicCurveUsecase(cmd, operands, lastPoint);
   }
 
   List<PathCommand> appendShorthandQuadraticCurve(
-      String cmd, Path path, List<double> operands, Offset lastPoint) {
-    return _appendShorthandQuadraticCurveUsecase(
-        cmd, path, operands, lastPoint);
+      String cmd, List<double> operands, Offset lastPoint) {
+    return _appendShorthandQuadraticCurveUsecase(cmd, operands, lastPoint);
   }
 }

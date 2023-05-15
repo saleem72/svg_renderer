@@ -15,6 +15,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<_XMLHasChanged>(_onXMLHasChanged);
     on<_DecodeXML>(_onDecodeXML);
     on<_ClearError>(_onClearError);
+    on<_ClearPaths>(_onClearPaths);
+  }
+
+  _onClearPaths(_ClearPaths event, Emitter<HomeState> emit) {
+    emit(state.copyWith(object: null));
   }
 
   _onClearError(_ClearError event, Emitter<HomeState> emit) {

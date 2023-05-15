@@ -2,7 +2,11 @@
 
 extension StringToDouble on String {
   double? toDouble() {
-    // final oprands = [CcMmLlHhVvZzQqTtAaSsZz];
-    return double.tryParse(this);
+    final result = double.tryParse(this);
+    // if (startsWith('-')) {
+    //   print(this);
+    // }
+
+    return result;
   }
 }

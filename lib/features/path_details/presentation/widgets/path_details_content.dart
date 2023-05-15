@@ -1,13 +1,14 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
+import 'package:svg_renderer/configuration/constants/app_constants.dart';
 import 'package:svg_renderer/configuration/extensions/build_context_extension.dart';
-import 'package:svg_renderer/configuration/routing/app_pages.dart';
-import 'package:svg_renderer/features/path_details/presentation/path_details_bloc/path_details_bloc.dart';
+import 'package:svg_renderer/features/path_details/presentation/widgets/generated_path.dart';
 
 import '../../../../core/domain/models/svg_path.dart';
-import 'command_view.dart';
+import '../../../../core/widgets/my_custom_painter.dart';
+import '../../../../core/widgets/path_details_flutter_path.dart';
 
 class PathDetailsContent extends StatelessWidget {
   const PathDetailsContent({
@@ -15,18 +16,21 @@ class PathDetailsContent extends StatelessWidget {
     required this.path,
   });
   final SVGPath path;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(path.id),
         actions: [
+          // IconButton(
+          //   onPressed: () => _calculatePath(context),
+          //   icon: const Icon(Icons.calculate),
+          // ),
           IconButton(
-            onPressed: () => _calculatePath(context),
-            icon: const Icon(Icons.calculate),
+            onPressed: () => _showCopyChoices(context),
+            icon: const Icon(Icons.copy),
           ),
-          const CopyPathButton(),
-          const NavigateToDrawButton(),
         ],
       ),
       body: Container(
@@ -53,22 +57,33 @@ class PathDetailsContent extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 1,
                     child: ListView.builder(
                       itemCount: path.steps.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final oprand = path.steps[index];
-                        return GestureDetector(
-                          onTap: _command,
-                          child: CommandView(oprand: oprand),
+                        final step = path.steps[index];
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(step.source),
+                              Wrap(spacing: 8, runSpacing: 8, children: [
+                                Text(step.command),
+                                ...step.points.map((e) => Text(e.toString())),
+                              ]),
+                            ],
+                          ),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    flex: 1,
-                    child: PathDetailsFlutterPath(),
+                  Expanded(
+                    child: PathDetailsFlutterPath(
+                      path: path,
+                    ),
                   ),
                 ],
               ),
@@ -79,84 +94,65 @@ class PathDetailsContent extends StatelessWidget {
     );
   }
 
-  _command() {}
-
-  _calculatePath(BuildContext context) {
-    final apis = path.getPath();
-    context.read<PathDetailsBloc>().add(PathDetailsEvent.update(apis: apis));
+  copyFlutter() async {
+    final apis = path.getFlutterCommands();
+    final string = apis.join('\n');
+    await Clipboard.setData(ClipboardData(text: string));
   }
-}
 
-class PathDetailsFlutterPath extends StatelessWidget {
-  const PathDetailsFlutterPath({super.key});
+  copyIOS() async {
+    final apis = path.getIOSCommands();
+    final string = apis.join('\n');
+    await Clipboard.setData(ClipboardData(text: string));
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<PathDetailsBloc, PathDetailsState>(
-      buildWhen: (previous, current) => previous.apis != current.apis,
-      builder: (context, state) {
-        return state.apis.isEmpty
-            ? const Text('Press Calcualte to get instructions')
-            : _buildList(state.apis);
+  _showCopyChoices(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: AppConstants.borderRadius),
+          title: Text(
+            'Copy to clipboard',
+            style: context.textTheme.titleMedium?.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Text(
+            'Which system',
+            style: context.textTheme.titleSmall?.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                copyIOS();
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: context.colorScheme.primary,
+                foregroundColor: context.colorScheme.onPrimary,
+              ),
+              child: const Text('IOS'),
+            ),
+            TextButton(
+              onPressed: () {
+                copyFlutter();
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: context.colorScheme.primary,
+                foregroundColor: context.colorScheme.onPrimary,
+              ),
+              child: const Text('Flutter'),
+            ),
+          ],
+        );
       },
-    );
-  }
-
-  Widget _buildList(List<String> apis) {
-    // return ListView.builder(
-    //   itemCount: apis.length,
-    //   itemBuilder: (BuildContext context, int index) {
-    //     return Text(apis[index]);
-    //   },
-    // );
-    final result = apis.join("\n");
-
-    return SelectableText(result);
-  }
-}
-
-class CopyPathButton extends StatelessWidget {
-  const CopyPathButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<PathDetailsBloc, PathDetailsState>(
-      buildWhen: (previous, current) => previous.apis != current.apis,
-      builder: (context, state) {
-        return state.apis.isEmpty
-            ? const SizedBox.shrink()
-            : _buildButton(context);
-      },
-    );
-  }
-
-  Widget _buildButton(BuildContext context) {
-    return IconButton(
-      onPressed: () {},
-      icon: const Icon(Icons.copy),
-    );
-  }
-}
-
-class NavigateToDrawButton extends StatelessWidget {
-  const NavigateToDrawButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<PathDetailsBloc, PathDetailsState>(
-      buildWhen: (previous, current) => previous.apis != current.apis,
-      builder: (context, state) {
-        return state.apis.isEmpty
-            ? const SizedBox.shrink()
-            : _buildButton(context);
-      },
-    );
-  }
-
-  Widget _buildButton(BuildContext context) {
-    return IconButton(
-      onPressed: () => context.navigator.pushNamed(AppPages.pathDraw),
-      icon: const Icon(Icons.color_lens),
     );
   }
 }
