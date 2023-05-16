@@ -1,7 +1,6 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:svg_renderer/configuration/extensions/path_extension.dart';
 import 'package:svg_renderer/core/domain/models/path_command.dart';
 
 class AppendLineTo {

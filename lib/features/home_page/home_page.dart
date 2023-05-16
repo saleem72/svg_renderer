@@ -5,13 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:svg_renderer/configuration/constants/app_constants.dart';
 import 'package:svg_renderer/configuration/extensions/build_context_extension.dart';
 import 'package:svg_renderer/configuration/routing/app_pages.dart';
-import 'package:svg_renderer/core/domain/models/svg_path.dart';
-import 'package:svg_renderer/core/widgets/path_details_flutter_path.dart';
 import 'package:svg_renderer/svg_provider/svg_provider.dart';
 
 import 'presentation/home_bloc/home_bloc.dart';
-import 'presentation/widgets/invalid_svg_error_view.dart';
-import 'presentation/widgets/svg_path_list.dart';
+import 'presentation/widgets/home_widgets.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({
@@ -40,6 +37,7 @@ class _HomePageContentState extends State<HomePageContent> {
   final TextEditingController _controller = TextEditingController();
   double _currentScaleValue = 1;
   double _currentOffsetValue = 0;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -53,13 +51,22 @@ class _HomePageContentState extends State<HomePageContent> {
         title: const Text('SVG Renderer'),
         actions: [
           IconButton(
-            onPressed: () =>
-                context.read<HomeBloc>().add(HomeEvent.clearPaths()),
-            icon: const Icon(Icons.close),
-          ),
-          IconButton(
             onPressed: () => context.navigator.pushNamed(AppPages.drawing),
             icon: const Icon(Icons.color_lens),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  _controller.text = '';
+                  _currentOffsetValue = 0;
+                  _currentScaleValue = 1;
+                });
+                context.read<HomeBloc>().add(HomeEvent.clearPaths());
+              },
+              icon: const Icon(Icons.close),
+            ),
           ),
         ],
       ),
@@ -78,7 +85,6 @@ class _HomePageContentState extends State<HomePageContent> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
     );
@@ -236,93 +242,5 @@ class _HomePageContentState extends State<HomePageContent> {
         )
       ],
     );
-  }
-}
-
-class StoredSVGButton extends StatelessWidget {
-  const StoredSVGButton({
-    super.key,
-    required this.item,
-    required this.onPressed,
-  });
-  final StoredSVGs item;
-  final VoidCallback onPressed;
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: GestureDetector(
-        onTap: onPressed,
-        child: Container(
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            color: item.color,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-              child: Text(
-            item.prefix,
-            style: context.textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          )),
-        ),
-      ),
-    );
-  }
-}
-
-class FullSVGImage extends StatelessWidget {
-  const FullSVGImage({
-    super.key,
-    required this.paths,
-  });
-  final List<SVGPath> paths;
-  @override
-  Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: Offset(50, 100),
-      child: Transform.scale(
-        scale: 0.8,
-        child: Stack(
-          children: [
-            ...paths.map((e) => PathDetailsFlutterPath(path: e)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DecodeXMLButton extends StatelessWidget {
-  const DecodeXMLButton({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      buildWhen: (previous, current) =>
-          previous.xml.isEmpty != current.xml.isEmpty,
-      builder: (context, state) {
-        return TextButton(
-          onPressed: state.xml.isNotEmpty ? () => _decode(context) : null,
-          style: TextButton.styleFrom(
-            foregroundColor: context.colorScheme.onPrimary,
-            backgroundColor: state.xml.isNotEmpty
-                ? context.colorScheme.primary
-                : context.colorScheme.primary.withOpacity(0.6),
-          ),
-          child: const Text(
-            'Decode',
-          ),
-        );
-      },
-    );
-  }
-
-  _decode(BuildContext context) {
-    context.read<HomeBloc>().add(HomeEvent.decodeXml());
   }
 }

@@ -11,8 +11,6 @@ import 'package:svg_renderer/core/domain/usecases/append_move_to.dart';
 import 'package:svg_renderer/core/domain/usecases/append_quadratic_curve.dart';
 import 'package:svg_renderer/core/domain/usecases/append_short_hand_cubic_curve.dart';
 import 'package:svg_renderer/core/domain/usecases/append_short_hand_quadratic_curve.dart';
-import 'package:svg_renderer/core/domain/usecases/height_ratio_string.dart';
-import 'package:svg_renderer/core/domain/usecases/width_ratio_string.dart';
 
 import '../models/path_step.dart';
 

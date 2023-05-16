@@ -19,7 +19,6 @@ class AppendArc {
 
     for (int offset = 0; offset < operands.length - 1; offset = offset + 7) {
       final currentPoint = lastControlPoint; // path.lastPosition;
-      print('lastControlPoint: ${lastControlPoint.toString()}');
       final double px = currentPoint.dx;
       final double py = currentPoint.dy;
       double rx = operands[offset];

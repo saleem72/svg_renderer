@@ -1,6 +1,5 @@
 //
 
-import 'package:flutter/material.dart';
 import 'package:svg_renderer/configuration/extensions/string_extension.dart';
 
 class PathStep {

@@ -7,7 +7,6 @@ import 'package:svg_renderer/configuration/extensions/path_extension.dart';
 Path copiedFromFlutter(Size size) {
   var path = Path();
   final width = size.width;
-  ;
   final height = size.height;
   path.move(to: Offset(0.49444 * width, 0.82951 * height));
   path.addLine(to: Offset(0.37955 * width, 0.99488 * height));

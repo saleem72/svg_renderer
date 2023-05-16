@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:svg_renderer/configuration/constants/app_constants.dart';
 import 'package:svg_renderer/configuration/extensions/build_context_extension.dart';
-import 'package:svg_renderer/features/path_details/presentation/widgets/generated_path.dart';
 
 import '../../../../core/domain/models/svg_path.dart';
-import '../../../../core/widgets/my_custom_painter.dart';
 import '../../../../core/widgets/path_details_flutter_path.dart';
 
 class PathDetailsContent extends StatelessWidget {
