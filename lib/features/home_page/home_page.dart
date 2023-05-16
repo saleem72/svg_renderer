@@ -7,6 +7,7 @@ import 'package:svg_renderer/configuration/extensions/build_context_extension.da
 import 'package:svg_renderer/configuration/routing/app_pages.dart';
 import 'package:svg_renderer/svg_provider/svg_provider.dart';
 
+import 'domain/models/stored_svgs.dart';
 import 'presentation/home_bloc/home_bloc.dart';
 import 'presentation/widgets/home_widgets.dart';
 
